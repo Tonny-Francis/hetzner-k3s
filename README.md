@@ -81,11 +81,11 @@ Comparação do **cluster base** K3s HA pronto para produção:
 
 | Provider | Config | CPUs | RAM | Custo/Mês | Custo Anual |
 |----------|--------|------|-----|-----------|-------------|
-| **Hetzner** | 3x CX23 + 3x CX33 + LB | 24 vCPU | 48 GB | **€32.33** (**R$201**) | **€387.96** (**R$2.410**) |
-| AWS EKS | Control Plane + 6 nodes | 24 vCPU | 48 GB | **~$550** | **~$6.600** |
-| GCP GKE | 6 nodes (sem managed) | 24 vCPU | 48 GB | **~$480** | **~$5.760** |
-| Azure AKS | 6 nodes (managed free) | 24 vCPU | 48 GB | **~$420** | **~$5.040** |
-| Oracle Cloud | 6 VMs | 24 vCPU | 48 GB | **~$280** | **~$3.360** |
+| **Hetzner** | 3x CX23 + 3x CX33 + LB | 24 vCPU | 36 GB | **€32.33** (**R$201**) | **€387.96** (**R$2.410**) |
+| AWS EKS | Control Plane + 6 nodes | 24 vCPU | 36 GB | **~$550** | **~$6.600** |
+| GCP GKE | 6 nodes (sem managed) | 24 vCPU | 36 GB | **~$480** | **~$5.760** |
+| Azure AKS | 6 nodes (managed free) | 24 vCPU | 36 GB | **~$420** | **~$5.040** |
+| Oracle Cloud | 6 VMs | 24 vCPU | 36 GB | **~$280** | **~$3.360** |
 
 > 💡 **Economia de até 94%** comparado à AWS e até 88% comparado ao Oracle Cloud!
 
@@ -95,8 +95,8 @@ Comparação do **cluster base** K3s HA pronto para produção:
 
 | Item | Descrição | Qtd | Preço Unit. | Subtotal |
 |------|-----------|-----|-------------|----------|
-| CX23 | Masters (2 vCPU, 8 GB RAM) | 3 | €3.49 | **€10.47** |
-| CX33 | Workers (4 vCPU, 16 GB RAM) | 3 | €5.49 | **€16.47** |
+| CX23 | Masters (2 vCPU, 4 GB RAM) | 3 | €3.49 | **€10.47** |
+| CX33 | Workers (4 vCPU, 8 GB RAM) | 3 | €5.49 | **€16.47** |
 | LB11 | Load Balancer | 1 | €5.39 | **€5.39** |
 | | | | | |
 | **CUSTO BASE MENSAL** | | | | **€32.33** |
@@ -104,7 +104,7 @@ Comparação do **cluster base** K3s HA pronto para produção:
 
 **Recursos do Cluster Base:**
 - 🖥️ **24 vCPUs** distribuídos em 6 servidores
-- 💾 **48 GB RAM** total
+- 💾 **36 GB RAM** total (3x 4GB + 3x 8GB)
 - 💿 **160 GB SSD local** nos servidores (para SO e cache)
 - 🌐 **1 Load Balancer** Hetzner com IP público
 - 🔒 **Rede privada** 10.0.0.0/24 entre nós
@@ -372,9 +372,9 @@ worker_node_pools:
 ```
 
 **Tipos de instância comuns:**
-- `cx23`: 2 vCPU, 8 GB RAM - €3.49/mês (ideal para masters)
-- `cx33`: 4 vCPU, 16 GB RAM - €5.49/mês (ideal para workers)
-- `cx43`: 8 vCPU, 32 GB RAM - €10.49/mês (para workloads pesados)
+- `cx23`: 2 vCPU, 4 GB RAM - €3.49/mês (ideal para masters)
+- `cx33`: 4 vCPU, 8 GB RAM - €5.49/mês (ideal para workers)
+- `cx43`: 8 vCPU, 16 GB RAM - €10.49/mês (para workloads pesados)
 
 Veja todas as opções em [Hetzner Cloud Pricing](https://www.hetzner.com/cloud).
 
