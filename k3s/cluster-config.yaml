@@ -1,0 +1,141 @@
+# 1 - Configuration basics for k3s cluster
+---
+cluster_name: k3s-production
+kubeconfig_path: "./k3s/kubeconfig"
+k3s_version: v1.35.0+k3s1
+
+# 2 - Configuration Network
+networking:
+  ssh:
+    port: 22
+    use_agent: false
+    public_key_path: "~/.ssh/k3s-hetzner.pub"
+    private_key_path: "~/.ssh/k3s-hetzner"
+  allowed_networks:
+    ssh:
+      - 0.0.0.0/0  # Temporary: Full access to create a cluster.
+    api:
+      - 0.0.0.0/0  # Temporary: Full access to create a cluster.
+  public_network:
+    ipv4: true
+    ipv6: false
+  cni:
+    enabled: true
+    encryption: false
+    mode: flannel
+  private_network:
+    enabled: true
+    subnet: 10.0.0.0/24
+    existing_network_name: "k3s-production"  # Name of the private network already created in Hetzner
+
+# 3 - Configuration Datastore
+datastore:
+  mode: etcd
+  etcd:
+    # Snapshot configuration
+    snapshot_retention: 24
+    snapshot_schedule_cron: "0 */2 * * *" # Every 2 hours
+    
+    # S3(Protocol, accepted AWS, Hetzner Storage...) backup configuration
+    s3_enabled: true
+    s3_region: "us-east-1"
+    s3_bucket: "k3s-production"
+    s3_folder: "etcd-snapshots"
+    # Define before creating the cluster:
+    # export ETCD_S3_ENDPOINT="https://s3.amazonaws.com" or Hetzner Storage Endpoint
+    # export ETCD_S3_ACCESS_KEY="your_aws_access_key_id" or Hetzner Storage Access Key
+    # export ETCD_S3_SECRET_KEY="your_aws_secret_access_key" or Hetzner Storage Secret Key
+
+# 4 - Configuration Nodes Masters
+schedule_workloads_on_masters: false
+
+masters_pool:
+  instance_type: cx23
+  instance_count: 3
+  locations:
+    - nbg1
+    - nbg1
+    - nbg1
+
+# 5 - Configuration Nodes Workers
+worker_node_pools:
+  - name: tools
+    instance_type: cx33
+    instance_count: 2
+    location: nbg1
+    labels:
+      - key: node-role
+        value: tools
+      - key: ingress
+        value: allow 
+    
+  - name: resources  
+    instance_type: cx33
+    instance_count: 1
+    location: nbg1
+    labels:
+      - key: node-role
+        value: resources
+      - key: ingress
+        value: allow 
+
+# 6 - Configuration Addons
+addons:
+  csi_driver:
+    enabled: true
+  traefik:
+    enabled: false
+  servicelb:
+    enabled: false
+  metrics_server:
+    enabled: false
+  cluster_autoscaler:
+    enabled: false
+  cloud_controller_manager:
+    enabled: true
+  system_upgrade_controller:
+    enabled: true
+  embedded_registry_mirror:
+    enabled: true
+  
+# 7 - Configuration Security and Misc
+kubelet_args:
+  - "--system-reserved=cpu=100m,memory=128Mi,ephemeral-storage=512Mi"
+  - "--kube-reserved=cpu=100m,memory=128Mi,ephemeral-storage=512Mi"
+  - "--eviction-hard=memory.available<128Mi,nodefs.available<5%"
+  - "--eviction-soft=memory.available<256Mi,nodefs.available<10%"
+  - "--eviction-soft-grace-period=memory.available=1m30s,nodefs.available=2m"
+  - "--enforce-node-allocatable=pods"
+
+additional_packages:
+  - curl
+  - htop
+  - iotop
+  - vim
+
+additional_post_k3s_commands:
+  - apt autoremove -y
+  - apt clean
+  - mkdir -p /etc/rancher/k3s
+  # - |
+  #   cat > /etc/rancher/k3s/registries.yaml <<'EOF'
+  #   mirrors:
+  #     docker.io:
+  #       endpoint:
+  #         - "https://registry-1.docker.io"
+  #     your.registry.com.br:
+  #       endpoint:
+  #         - "https://your.registry.com.br"
+  #   configs:
+  #     "your.registry.com.br":
+  #       auth:
+  #         username: registry_user
+  #         password: registry_password
+  #       tls:
+  #         insecure_skip_verify: false
+  #   EOF
+  # - systemctl restart k3s || systemctl restart k3s-agent
+
+protect_against_deletion: true
+create_load_balancer_for_the_kubernetes_api: false
+k3s_upgrade_concurrency: 1
